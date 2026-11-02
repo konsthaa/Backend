@@ -1,0 +1,28 @@
+# api http test requests for VSCode
+
+### get cats
+GET http://127.0.0.1:3000/api/v1/cats
+
+
+### get cat by id
+GET http://127.0.0.1:3000/api/v1/cats/3
+
+
+### post new cat
+POST http://127.0.0.1:3000/api/v1/cats
+Content-Type: application/json
+
+{
+  "name": "Nisha",
+  "age": 2,
+  "birthdate": "2021-01-01",
+  "breed": "Domestic Shorthair",
+  "weight": 4.5,
+  "color": "gray",
+  "gender": "Male",
+  "vaccinated": true,
+  "neutered": true,
+  "microchipped": true,
+  "owner": "Michael Jackson",
+  "image": "https://placecats.com/300/200"
+}
