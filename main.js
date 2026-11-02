@@ -96,6 +96,6 @@ app.post('/api/v1/cats', (req, res) => {
   res.sendStatus(201); // Created
 });
 
-
+// 2. tehtävä pitäisi olla tehtynä seuraavalle tunnille.
 
 
