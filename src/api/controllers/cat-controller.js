@@ -1,8 +1,8 @@
-import {cats} from '../models/cat-model.js';
+import {addCat, findCatById, listAllCats, modifyCat, removeCat} from '../models/cat-model.js';
 
 const getAllCats = (req, res) => {
   //const cats = [{cat_id: 1, name: 'Misu'}];
-  res.json(cats);
+  res.json(listAllCats());
 }
 
 const getCatById = (req, res) => {
@@ -10,10 +10,9 @@ const getCatById = (req, res) => {
   // PALAUTTAKAA VAIN YKSI KISSA req.params.id haulla
   // 1. Haetaan ID URL-parametrista ja muunnetaan numeroksi
   const id = Number(req.params.id);
-  console.log(id);
-  // 2. Etsitään kissa taulukosta
-  // find palauttaa ensimmäisen löytyneen olion tai undefined
-  const cat = cats.find((cat) => cat.cat_id === id);
+  //console.log(id);
+  // 2. Haetaan kissa modelilta
+  const cat = findCatById(id);
   // 3. Jos kissaa ei löydy, palautetaan 404
   if (!cat) {
     return res.status(404).json({message: 'Kissaa ei löytynyt'});
@@ -24,7 +23,27 @@ const getCatById = (req, res) => {
 
 const postCat = (req, res) => {
   console.log('request', req.body);
-  res.sendStatus(201);
+  const id = addCat(req.body);
+  res.status(201).json({cat_id: id});
 };
 
-export {getAllCats, getCatById, postCat};
+const deleteCat = (req, res) => {
+  const result = removeCat(Number(req.params.id));
+  if (result) {
+    res.json({message: 'Cat removed!'});
+  } else {
+    res.status(404).json({error: 404, message: 'Not found.'});
+  }
+};
+
+const putCat = (req, res) => {
+  // in real life, all input data (req.body) should be validated before using it
+  const result = modifyCat(Number(req.params.id), req.body);
+  if (result) {
+    res.json({message: 'Cat updated!'});
+  } else {
+    res.status(404).json({error: 404, message: 'Not found.'});
+  }
+};
+
+export {getAllCats, getCatById, postCat, deleteCat, putCat};
