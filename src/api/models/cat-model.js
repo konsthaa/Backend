@@ -37,32 +37,9 @@ const findCatById = (id) => {
 };
 
 const addCat = (cat) => {
-  const {cat_name, weight, owner, filename, birthdate} = cat;
-  const newId = cats[0].cat_id + 1;
-  cats.unshift({
-    cat_id: newId,
-    cat_name,
-    weight,
-    owner,
-    filename,
-    birthdate,
-  });
+  const newId = Math.max(...cats.map((item) => item.cat_id)) + 1;
+  cats.unshift({...cat, cat_id: newId});
   return newId;
 };
 
-const removeCat = (id) => {
-  const index = cats.findIndex(cat => id === cat.cat_id);
-  cats.splice(index, 1);
-  // palauttaa true, jos poisto onnistui
-  return index !== -1;
-};
-
-const modifyCat = (id, newDetails) => {
-  const index = cats.findIndex(cat => id === cat.cat_id);
-  // create new object and combine properties/values of two objects inside it
-  cats[index] = {...cats[index], ...newDetails};
-  // palauttaa true, jos muokkaus onnistui
-  return index !== -1;
-};
-
-export {listAllCats, findCatById, addCat, removeCat, modifyCat};
+export {listAllCats, findCatById, addCat};
