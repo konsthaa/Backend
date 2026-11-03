@@ -48,7 +48,7 @@ Content-Disposition: form-data; name="birthdate"
 Content-Disposition: form-data; name="image"; filename="cat.jpg"
 Content-Type: image/jpeg
 
-< ./dog.jpg
+< ./cat.jpg
 --MyBoundary--
 
 ### edit existing cat

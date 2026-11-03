@@ -47,7 +47,17 @@ const postCat = (req, res) => {
   const result = addCat(req.body);
     if (result) {
       res.status(201);
-      res.json({message: 'New cat added.', result});
+      res.status(201).json({
+  message: 'New cat added.',
+  result,
+  upload: req.file
+    ? {
+        filename: req.file.filename,
+        url: `/uploads/${req.file.filename}`,
+        thumbnailUrl: `/uploads/${req.file.filename}_thumb.png`,
+      }
+    : null,
+});
     } else {
       res.sendStatus(400);
     }
