@@ -1,9 +1,24 @@
-import {addCat, findCatById, listAllCats} from '../models/cat-model.js';
+import {
+  addCat,
+  findCatById,
+  listAllCats,
+  modifyCat,
+  removeCat,
+} from '../models/cat-model.js';
 
 const getAllCats = (req, res) => {
   //const cats = [{cat_id: 1, name: 'Misu'}];
-  res.json(listAllCats());
-}
+  console.log('Ollaan nyt controllerissa');
+  // res.json(listAllCats());
+  const cats = listAllCats();
+
+  // esimerkki siitä että middleware on muokannut req-objektia
+  res.json({
+    message: 'Cats reittiin lisätty aikaleima',
+    time: req.requestTime,
+    data: cats,
+  });
+};
 
 const getCatById = (req, res) => {
   //console.log(req);
@@ -22,16 +37,39 @@ const getCatById = (req, res) => {
 };
 
 const postCat = (req, res) => {
-  const id = addCat(req.body);
-  res.status(201).json({cat_id: id});
+  console.log('request', req.body);
+  console.log(req.file);
+  if (req.file) {
+    req.body.filename = req.file.filename;
+  }
+  //const id = addCat(req.body);
+  //res.status(201).json({cat_id: id});
+  const result = addCat(req.body);
+    if (result) {
+      res.status(201);
+      res.json({message: 'New cat added.', result});
+    } else {
+      res.sendStatus(400);
+    }
 };
 
 const deleteCat = (req, res) => {
-  res.json({message: 'Cat item deleted.'});
+  const result = removeCat(Number(req.params.id));
+  if (result) {
+    res.json({message: 'Cat removed!'});
+  } else {
+    res.status(404).json({error: 404, message: 'Not found.'});
+  }
 };
 
 const putCat = (req, res) => {
-  res.json({message: 'Cat item updated.'});
+  // in real life, all input data (req.body) should be validated before using it
+  const result = modifyCat(Number(req.params.id), req.body);
+  if (result) {
+    res.json({message: 'Cat updated!'});
+  } else {
+    res.status(404).json({error: 404, message: 'Not found.'});
+  }
 };
 
 export {getAllCats, getCatById, postCat, deleteCat, putCat};
