@@ -2,6 +2,12 @@
 @apiUrl = http://127.0.0.1:3000/api/v1
 
 
+##Get created user
+GET {{apiUrl}}/users/38
+
+### test user database works
+GET {{apiUrl}}/users
+
 ### get cats
 GET {{apiUrl}}/cats
 
@@ -10,6 +16,32 @@ GET {{apiUrl}}/cats/8
 
 ### get cat by id (FAIL: not found)
 GET {{apiUrl}}/cats/98
+
+### Verify change
+GET {{apiUrl}}/users/38
+
+### create a temporary test user
+POST {{apiUrl}}/users
+Content-Type: application/json
+
+{
+  "name": "Assignment Test",
+  "username": "assignment_test_01",
+  "email": "assignment_test_01@example.com",
+  "password": "temporary-test-password",
+  "role": "user"
+}
+
+### update the temporary test user
+PUT {{apiUrl}}/users/38
+Content-Type: application/json
+
+{
+  "name": "Assignment Test Updated"
+}
+
+### delete temporary test user
+DELETE {{apiUrl}}/users/38
 
 # cat_name, weight, owner, filename, birthdate
 ### post new cat
@@ -20,7 +52,7 @@ Content-Type: application/json
     "cat_name": "Rolle",
     "birthdate": "2022-10-10",
     "weight": 4,
-    "owner": "Tiina",
+    "owner": 37,
     "filename": "https://placecats.com/310/240"
 }
 
@@ -39,7 +71,7 @@ Content-Disposition: form-data; name="weight"
 --MyBoundary
 Content-Disposition: form-data; name="owner"
 
-3602
+37
 --MyBoundary
 Content-Disposition: form-data; name="birthdate"
 

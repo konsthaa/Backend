@@ -4,6 +4,7 @@ import {
   listAllCats,
   modifyCat,
   removeCat,
+  listCatsByOwnerId,
 } from '../models/cat-model.js';
 
 
@@ -83,4 +84,15 @@ const putCat = async (req, res) => {
   }
 };
 
-export {getAllCats, getCatById, postCat, deleteCat, putCat};
+const getCatsByUserId = async (req, res) => {
+  const userId = Number(req.params.userId);
+
+  if (!Number.isInteger(userId) || userId < 1) {
+    return res.status(400).json({message: 'Invalid user ID.'});
+  }
+
+  const cats = await listCatsByOwnerId(userId);
+  res.json(cats);
+};
+
+export {getAllCats, getCatById, postCat, deleteCat, putCat, getCatsByUserId};
