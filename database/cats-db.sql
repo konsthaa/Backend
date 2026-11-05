@@ -2,11 +2,6 @@ DROP DATABASE IF EXISTS cats;
 CREATE DATABASE cats;
 USE cats;
 
--- Replace 'myusername' and 'mypassword' with your desired username and password (DO NOT USE YOUR METROPOLIA CREDENTIALS)
-ALTER USER 'konsta'@'localhost' IDENTIFIED BY 'OrnataLog22!';
-GRANT ALL PRIVILEGES ON `cats`.* TO 'konsta'@'localhost';
-FLUSH PRIVILEGES;
-
 CREATE TABLE `wsk_users` (
   `user_id` int(11) NOT NULL AUTO_INCREMENT,
   `name` text NOT NULL,
