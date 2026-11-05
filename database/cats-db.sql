@@ -2,6 +2,10 @@ DROP DATABASE IF EXISTS cats;
 CREATE DATABASE cats;
 USE cats;
 
+ALTER USER 'root'@'localhost' IDENTIFIED BY 'poopoo';
+GRANT ALL PRIVILEGES ON `cats`.* TO 'root'@'localhost';
+FLUSH PRIVILEGES;
+
 CREATE TABLE `wsk_users` (
   `user_id` int(11) NOT NULL AUTO_INCREMENT,
   `name` text NOT NULL,

@@ -19,6 +19,15 @@ const getUserById = async (req, res) => {
 
 // Handle POST /users using the JSON request body, then respond with the new ID.
 const postUser = async (req, res) => {
+  const {name, username, email, password} = req.body ?? {};
+  if (![name, username, email, password].every(
+    (value) => typeof value === 'string' && value.trim(),
+  )) {
+    return res.status(400).json({
+      message: 'Name, username, email, and password are required.',
+    });
+  }
+
   const id = await addUser(req.body);
   res.status(201).json({user_id: id});
 };

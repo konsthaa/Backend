@@ -1,4 +1,5 @@
 import promisePool from '../../utils/database.js';
+import bcrypt from 'bcrypt';
 
 // In-memory sample data; changes are lost when the server restarts.
 
@@ -19,13 +20,22 @@ const findUserById = async (id) => {
   return rows[0] ?? false;
 };
 
+const findUserByUsername = async (username) => {
+  const [rows] = await promisePool.execute(
+    'SELECT * FROM wsk_users WHERE username = ?',
+    [username],
+  );
+  return rows[0] ?? false;
+};
+
 // Create the next ID, add the new user to the array, and return that ID.
 const addUser = async (user) => {
   const {name, username, email, password, role = 'user'} = user;
+  const hashedPassword = await bcrypt.hash(password, 10);
   const [result] = await promisePool.execute(
     `INSERT INTO wsk_users (name, username, email, password, role)
      VALUES (?, ?, ?, ?, ?)`,
-    [name, username, email, password, role]
+    [name, username, email, hashedPassword, role]
   );
   return result.insertId;
 };
@@ -41,7 +51,11 @@ const modifyUser = async (user, id) => {
   }
 
   const assignments = entries.map(([field]) => `${field} = ?`).join(', ');
-  const values = entries.map(([, value]) => value);
+  const values = await Promise.all(
+    entries.map(async ([field, value]) =>
+      field === 'password' ? bcrypt.hash(value, 10) : value
+    )
+  );
   const [result] = await promisePool.execute(
     `UPDATE wsk_users SET ${assignments} WHERE user_id = ?`,
     [...values, id]
@@ -79,4 +93,4 @@ const removeUser = async (id) => {
 };
 
 // Export model functions for use by the controller.
-export {listAllUsers, findUserById, addUser, modifyUser, removeUser};
+export {listAllUsers, findUserById, addUser, modifyUser, removeUser, findUserByUsername};

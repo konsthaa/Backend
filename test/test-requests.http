@@ -20,6 +20,36 @@ GET {{apiUrl}}/cats/98
 ### Verify change
 GET {{apiUrl}}/users/38
 
+
+### create auth test user
+POST {{apiUrl}}/users
+Content-Type: application/json
+
+{
+  "name": "Auth Test",
+  "username": "auth_test_01",
+  "email": "auth_test_01@example.com",
+  "password": "dummy-test-password"
+}
+
+
+### login
+# @name login
+POST {{apiUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "username": "auth_test_01",
+  "password": "dummy-test-password"
+}
+
+### get authenticated user
+GET {{apiUrl}}/auth/me
+Authorization: Bearer {{login.response.body.token}}
+
+### Create a new user and check that the password is hashed in the database
+POST {{apiUrl}}/users
+
 ### create a temporary test user
 POST {{apiUrl}}/users
 Content-Type: application/json
@@ -94,3 +124,14 @@ Content-Type: application/json
 
 ### delete cat by id
 DELETE {{apiUrl}}/cats/8
+
+### delete user 39
+DELETE {{apiUrl}}/users/39
+
+### protected route without token (expect 401)
+DELETE {{apiUrl}}/cats/999999
+
+
+### protected route with token (expect 404 for nonexistent cat)
+DELETE {{apiUrl}}/cats/999999
+Authorization: Bearer {{login.response.body.token}}

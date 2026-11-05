@@ -1,3 +1,4 @@
+import {authenticateToken} from '../../middlewares/authentication.js';
 import express from 'express';
 import {
   deleteCat,
@@ -20,10 +21,14 @@ const catRouter = express.Router();
 catRouter
   .route('/')
   .get(logger, getAllCats)
-  .post(upload.single('image'), createThumbnail, postCat);
+  .post(authenticateToken, upload.single('image'), createThumbnail, postCat);
 // Kaikki /api/v1/cats/:id reitit
 catRouter.get('/by-user/:userId', getCatsByUserId);
-catRouter.route('/:id').get(getCatById).delete(deleteCat).put(putCat);
+catRouter
+  .route('/:id')
+  .get(getCatById)
+  .delete(authenticateToken, deleteCat)
+  .put(authenticateToken, putCat);
 
 export default catRouter;
 
