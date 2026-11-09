@@ -2,6 +2,8 @@ import express from 'express';
 import router from './api/index.js';
 import requestTime from './middlewares/request-time.js';
 import cors from 'cors';
+import notFoundHandler from './middlewares/error-handlers.js';
+import errorHandler from './middlewares/error-handlers.js';
 
 const app = express();
 
@@ -19,8 +21,11 @@ app.use(express.urlencoded({extended: true}));
 //after creating app
 app.use(cors());
 
-export default app;
-
 // Ohjataan kaikki /api/v1/-alkuiset pyynnöt apin router middlewarelle (api/index.js)
 app.use('/api/v1', router);
+
+app.use(notFoundHandler);
+app.use(errorHandler);
+
+export default app;
 

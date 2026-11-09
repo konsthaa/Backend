@@ -240,3 +240,8 @@ Content-Type: application/json
 {
   "name": "Admin Authorization Test"
 }
+
+
+### olematon reitti
+GET http://localhost:3000/ei-ole-olemassa
+
