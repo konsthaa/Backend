@@ -9,11 +9,11 @@ import {
   getCatsByUserId,
 } from '../controllers/cat-controller.js';
 import logger from '../../middlewares/logger.js';
+import {body} from 'express-validator';
+import {validationErrors} from '../../middlewares/error-handlers.js';
 
 // multer and sharp imports
-import multer from 'multer';
-import { createThumbnail } from '../../middlewares/upload.js';
-const upload = multer({dest: 'uploads/'});
+import {upload, createThumbnail} from '../../middlewares/upload.js';
 
 const catRouter = express.Router();
 
@@ -21,14 +21,47 @@ const catRouter = express.Router();
 catRouter
   .route('/')
   .get(logger, getAllCats)
-  .post(authenticateToken, upload.single('image'), createThumbnail, postCat);
+  .post(
+    authenticateToken,
+    upload.single('image'),
+    body('cat_name')
+      .trim()
+      .isLength({min: 3, max: 50})
+      .withMessage('Cat name must be 3–50 characters.'),
+    body('weight')
+      .isFloat({gt: 0})
+      .withMessage('Weight must be a positive number.')
+      .toFloat(),
+    body('birthdate').isDate().withMessage('Birthdate must be a valid date.'),
+    validationErrors,
+    createThumbnail,
+    postCat
+  );
 // Kaikki /api/v1/cats/:id reitit
 catRouter.get('/by-user/:userId', getCatsByUserId);
 catRouter
   .route('/:id')
   .get(getCatById)
   .delete(authenticateToken, deleteCat)
-  .put(authenticateToken, putCat);
+  .put(
+    authenticateToken,
+    body('cat_name')
+      .optional()
+      .trim()
+      .isLength({min: 3, max: 50})
+      .withMessage('Cat name must be 3–50 characters.'),
+    body('weight')
+      .optional()
+      .isFloat({gt: 0})
+      .withMessage('Weight must be a positive number.')
+      .toFloat(),
+    body('birthdate')
+      .optional()
+      .isDate()
+      .withMessage('Birthdate must be a valid date.'),
+    validationErrors,
+    putCat
+  );
 
 export default catRouter;
 

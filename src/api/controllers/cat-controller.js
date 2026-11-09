@@ -21,7 +21,7 @@ const getAllCats = async (req, res) => {
   });
 };
 
-const getCatById = async (req, res) => {
+const getCatById = async (req, res, next) => {
   //console.log(req);
   // PALAUTTAKAA VAIN YKSI KISSA req.params.id haulla
   // 1. Haetaan ID URL-parametrista ja muunnetaan numeroksi
@@ -31,50 +31,63 @@ const getCatById = async (req, res) => {
   const cat = await findCatById(id);
   // 3. Jos kissaa ei löydy, palautetaan 404
   if (!cat) {
-    return res.status(404).json({message: 'Kissaa ei löytynyt'});
+    const error = new Error('Cat not found.');
+    error.status = 404;
+    return next(error);
   }
   // 4. Jos kissa löytyy, palautetaan sen tiedot
   res.json(cat);
 };
 
-const postCat = async (req, res) => {
+const postCat = async (req, res, next) => {
   console.log('request', req.body);
   console.log(req.file);
-  if (req.file) {
-    req.body.filename = req.file.filename;
+  if (!req.file) {
+    const error = new Error('Invalid or missing image file.');
+    error.status = 400;
+    return next(error);
   }
   //const id = addCat(req.body);
   //res.status(201).json({cat_id: id});
-  req.body = {...(req.body ?? {}), owner: res.locals.user.user_id};
+  req.body = {
+    ...(req.body ?? {}),
+    filename: req.file.filename,
+    owner: res.locals.user.user_id,
+  };
   const result = await addCat(req.body);
   if (result) {
-    res.status(201);
     res.status(201).json({
       message: 'New cat added.',
       result,
-      upload: req.file
-        ? {
-            filename: req.file.filename,
-            url: `/uploads/${req.file.filename}`,
-            thumbnailUrl: `/uploads/${req.file.filename}_thumb.png`,
-          }
-        : null,
+      upload: {
+        filename: req.file.filename,
+        url: `/uploads/${req.file.filename}`,
+        ...(req.file.mimetype.startsWith('image/')
+          ? {thumbnailUrl: `/uploads/${req.file.filename}_thumb.png`}
+          : {}),
+      },
     });
   } else {
-    res.sendStatus(400);
+    const error = new Error('Cat could not be created.');
+    error.status = 500;
+    return next(error);
   }
 };
 
-const deleteCat = async (req, res) => {
+const deleteCat = async (req, res, next) => {
   const result = await removeCat(Number(req.params.id), res.locals.user);
   if (result) {
     res.json({message: 'Cat removed!'});
   } else {
-    res.status(404).json({error: 404, message: 'Not found.'});
+    const error = new Error(
+      'Cat not found or you are not allowed to modify it.'
+    );
+    error.status = 404;
+    return next(error);
   }
 };
 
-const putCat = async (req, res) => {
+const putCat = async (req, res, next) => {
   // in real life, all input data (req.body) should be validated before using it
   const result = await modifyCat(
     req.body,
@@ -84,15 +97,21 @@ const putCat = async (req, res) => {
   if (result) {
     res.json({message: 'Cat updated!'});
   } else {
-    res.status(404).json({error: 404, message: 'Not found.'});
+    const error = new Error(
+      'Cat not found or you are not allowed to modify it.'
+    );
+    error.status = 404;
+    return next(error);
   }
 };
 
-const getCatsByUserId = async (req, res) => {
+const getCatsByUserId = async (req, res, next) => {
   const userId = Number(req.params.userId);
 
   if (!Number.isInteger(userId) || userId < 1) {
-    return res.status(400).json({message: 'Invalid user ID.'});
+    const error = new Error('Invalid user ID.');
+    error.status = 400;
+    return next(error);
   }
 
   const cats = await listCatsByOwnerId(userId);

@@ -14,38 +14,31 @@ const getAllUsers = async (req, res) => {
 };
 
 // Handle GET /users/:id; URL parameters arrive as strings, so convert the ID to a number.
-const getUserById = async (req, res) => {
+const getUserById = async (req, res, next) => {
   const user = await findUserById(Number(req.params.id));
   // Return a 404 response when the model cannot find that ID.
   if (!user) {
-    return res.status(404).json({message: 'User not found.'});
+    const error = new Error('User not found.');
+    error.status = 404;
+    return next(error);
   }
   res.json(user);
 };
 
 // Handle POST /users using the JSON request body, then respond with the new ID.
 const postUser = async (req, res) => {
-  const {name, username, email, password} = req.body ?? {};
-  if (
-    ![name, username, email, password].every(
-      (value) => typeof value === 'string' && value.trim()
-    )
-  ) {
-    return res.status(400).json({
-      message: 'Name, username, email, and password are required.',
-    });
-  }
-
   const id = await addUser(req.body);
   res.status(201).json({user_id: id});
 };
 
-const putUser = async (req, res) => {
+const putUser = async (req, res, next) => {
   const id = Number(req.params.id);
   const actor = res.locals.user;
 
   if (!Number.isInteger(id) || id < 1) {
-    return res.status(400).json({message: 'Invalid user ID.'});
+    const error = new Error('Invalid user ID.');
+    error.status = 400;
+    return next(error);
   }
 
   if (!actor || (actor.role !== 'admin' && actor.user_id !== id)) {
@@ -61,19 +54,21 @@ const putUser = async (req, res) => {
 
   const updated = await modifyUser(req.body, id, actor);
   if (!updated) {
-    return res.status(404).json({message: 'User not found.'});
+    const error = new Error('User not found.');
+    error.status = 404;
+    return next(error);
   }
   res.json({message: 'User updated.'});
 };
 
-// These endpoints intentionally return the fixed responses required by the assignment.
-
-const deleteUser = async (req, res) => {
+const deleteUser = async (req, res, next) => {
   const id = Number(req.params.id);
   const actor = res.locals.user;
 
   if (!Number.isInteger(id) || id < 1) {
-    return res.status(400).json({message: 'Invalid user ID.'});
+    const error = new Error('Invalid user ID.');
+    error.status = 400;
+    return next(error);
   }
 
   if (!actor || (actor.role !== 'admin' && actor.user_id !== id)) {
@@ -82,7 +77,9 @@ const deleteUser = async (req, res) => {
 
   const deleted = await removeUser(id);
   if (!deleted) {
-    return res.status(404).json({message: 'User not found.'});
+    const error = new Error('User not found.');
+    error.status = 404;
+    return next(error);
   }
   res.json({message: 'User and their cats deleted.'});
 };

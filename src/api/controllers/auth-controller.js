@@ -5,13 +5,6 @@ import {findUserByUsername} from '../models/user-model.js';
 
 const postLogin = async (req, res) => {
   const {username, password} = req.body ?? {};
-
-  if (typeof username !== 'string' || typeof password !== 'string') {
-    return res
-      .status(400)
-      .json({message: 'Username and password are required.'});
-  }
-
   const user = await findUserByUsername(username);
   if (!user || !(await bcrypt.compare(password, user.password))) {
     return res.sendStatus(401);

@@ -8,3 +8,5 @@ node_modules
 !/uploads/.gitkeep
 create-db-user.sql
 .env
+/cat-ui/
+/__MACOSX/

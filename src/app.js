@@ -2,16 +2,14 @@ import express from 'express';
 import router from './api/index.js';
 import requestTime from './middlewares/request-time.js';
 import cors from 'cors';
-import notFoundHandler from './middlewares/error-handlers.js';
-import errorHandler from './middlewares/error-handlers.js';
+import {notFoundHandler, errorHandler} from './middlewares/error-handlers.js';
 
 const app = express();
 
 app.use(express.static('public'));
 // app.use('/images', express.static('public'));
-
-// middlewaret, myös express on sellainen
-// suoritetaan ennen reittejä
+app.use('/uploads', express.static('uploads'));
+//...
 app.use(requestTime);
 // needed for reading request body in JSON format
 app.use(express.json());
@@ -28,4 +26,3 @@ app.use(notFoundHandler);
 app.use(errorHandler);
 
 export default app;
-

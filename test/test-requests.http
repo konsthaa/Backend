@@ -36,6 +36,17 @@ Content-Type: application/json
 }
 
 
+POST {{apiUrl}}/users
+Content-Type: application/json
+
+{
+  "name": "Auth Test",
+  "username": "auth_test_01",
+  "email": "auth_test_01@example.com",
+  "password": "dummy-test-password"
+}
+
+
 ### login
 # @name login
 POST {{apiUrl}}/auth/login
@@ -145,6 +156,7 @@ Content-Type: application/json
 
 ### post cat WITH IMAGE
 POST http://127.0.0.1:3000/api/v1/cats HTTP/1.1
+Authorization: Bearer {{login.response.body.token}}
 Content-Type: multipart/form-data; boundary=MyBoundary
 
 --MyBoundary
@@ -221,6 +233,17 @@ Content-Type: application/json
   "password": "temporary-admin-password"
 }
 
+### invalid reg request
+POST {{apiUrl}}/users
+Content-Type: application/json
+
+{
+  "name": "Test",
+  "username": "validtest02",
+  "email": "miumau@gmail.com",
+  "password": "j7h8j7h5g4"
+}
+
 
 ### Admin updates another user's cat
 PUT {{apiUrl}}/cats/51
@@ -245,3 +268,116 @@ Content-Type: application/json
 ### olematon reitti
 GET http://localhost:3000/ei-ole-olemassa
 
+
+### Test invalid email on own account (expect 400)
+PUT {{apiUrl}}/users/40
+Authorization: Bearer {{login.response.body.token}}
+Content-Type: application/json
+
+{
+  "email": "not-an-email"
+}
+
+### Test valid update on own account (expect 200)
+PUT {{apiUrl}}/users/40
+Authorization: Bearer {{login.response.body.token}}
+Content-Type: application/json
+
+{
+  "name": "Auth Test Updated"
+}
+
+### Test JSON 404 for a missing cat
+GET {{apiUrl}}/cats/999999
+
+### testing with invalid user number
+GET {{apiUrl}}/cats/by-user/not-a-number
+
+
+### baabaa
+PUT {{apiUrl}}/users/not-a-number
+Authorization: Bearer {{login.response.body.token}}
+Content-Type: application/json
+
+{
+  "name": "Invalid ID test"
+}
+
+### Assignment 7 user error-handler tests
+# Create this test user once, then use the login request below.
+# @name assignment7TestUser
+POST {{apiUrl}}/users
+Content-Type: application/json
+
+{
+  "name": "Assignment 7 Test",
+  "username": "a7verify0911",
+  "email": "a7verify0911@example.com",
+  "password": "assignment7-test-password"
+}
+
+### Login as the Assignment 7 test user
+# @name assignment7Login
+POST {{apiUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "username": "a7verify0911",
+  "password": "assignment7-test-password"
+}
+
+### Invalid user ID on update (expect shared JSON 400)
+PUT {{apiUrl}}/users/not-a-number
+Authorization: Bearer {{assignment7Login.response.body.token}}
+Content-Type: application/json
+
+{
+  "name": "Invalid ID test"
+}
+
+### Invalid user ID on delete (expect shared JSON 400)
+DELETE {{apiUrl}}/users/not-a-number
+Authorization: Bearer {{assignment7Login.response.body.token}}
+
+### Non-admin cannot update another user (expect 403)
+PUT {{apiUrl}}/users/99999999
+Authorization: Bearer {{assignment7Login.response.body.token}}
+Content-Type: application/json
+
+{
+  "name": "Forbidden update test"
+}
+
+### Non-admin cannot delete another user (expect 403)
+DELETE {{apiUrl}}/users/99999999
+Authorization: Bearer {{assignment7Login.response.body.token}}
+
+### Missing user on update (expect shared JSON 404; run a successful adminLogin first)
+PUT {{apiUrl}}/users/99999999
+Authorization: Bearer {{adminLogin.response.body.token}}
+Content-Type: application/json
+
+{
+  "name": "Missing user update test"
+}
+
+### Missing user on delete (expect shared JSON 404; run a successful adminLogin first)
+DELETE {{apiUrl}}/users/99999999
+Authorization: Bearer {{adminLogin.response.body.token}}
+
+### Clean up the temporary Assignment 7 test user (run after the other checks)
+DELETE {{apiUrl}}/users/{{assignment7TestUser.response.body.user_id}}
+Authorization: Bearer {{assignment7Login.response.body.token}}
+
+### Invalid Id no delete - 400
+DELETE {{apiUrl}}/users/not-a-number
+Authorization: Bearer {{login.response.body.token}}
+
+### Missing user on update 404
+PUT {{apiUrl}}/users/999999
+Authorization: Bearer {{adminLogin.response.body.token}}
+Content-Type: application/json
+
+{
+  "name": "Missing user test"
+}
