@@ -30,7 +30,8 @@ const findUserByUsername = async (username) => {
 
 // Create the next ID, add the new user to the array, and return that ID.
 const addUser = async (user) => {
-  const {name, username, email, password, role = 'user'} = user;
+  const {name, username, email, password} = user;
+  const role = 'user';
   const hashedPassword = await bcrypt.hash(password, 10);
   const [result] = await promisePool.execute(
     `INSERT INTO wsk_users (name, username, email, password, role)
@@ -40,10 +41,12 @@ const addUser = async (user) => {
   return result.insertId;
 };
 
-const modifyUser = async (user, id) => {
+const modifyUser = async (user, id, actor) => {
   const allowedFields = ['name', 'username', 'email', 'password', 'role'];
-  const entries = Object.entries(user).filter(([field]) =>
-    allowedFields.includes(field)
+  const entries = Object.entries(user ?? {}).filter(
+    ([field]) =>
+      allowedFields.includes(field) &&
+      (field !== 'role' || actor?.role === 'admin')
   );
 
   if (entries.length === 0) {

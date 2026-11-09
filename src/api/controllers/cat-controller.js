@@ -7,7 +7,6 @@ import {
   listCatsByOwnerId,
 } from '../models/cat-model.js';
 
-
 const getAllCats = async (req, res) => {
   //const cats = [{cat_id: 1, name: 'Misu'}];
   console.log('Ollaan nyt controllerissa');
@@ -46,27 +45,28 @@ const postCat = async (req, res) => {
   }
   //const id = addCat(req.body);
   //res.status(201).json({cat_id: id});
+  req.body = {...(req.body ?? {}), owner: res.locals.user.user_id};
   const result = await addCat(req.body);
-    if (result) {
-      res.status(201);
-      res.status(201).json({
-  message: 'New cat added.',
-  result,
-  upload: req.file
-    ? {
-        filename: req.file.filename,
-        url: `/uploads/${req.file.filename}`,
-        thumbnailUrl: `/uploads/${req.file.filename}_thumb.png`,
-      }
-    : null,
-});
-    } else {
-      res.sendStatus(400);
-    }
+  if (result) {
+    res.status(201);
+    res.status(201).json({
+      message: 'New cat added.',
+      result,
+      upload: req.file
+        ? {
+            filename: req.file.filename,
+            url: `/uploads/${req.file.filename}`,
+            thumbnailUrl: `/uploads/${req.file.filename}_thumb.png`,
+          }
+        : null,
+    });
+  } else {
+    res.sendStatus(400);
+  }
 };
 
 const deleteCat = async (req, res) => {
-  const result = await removeCat(Number(req.params.id));
+  const result = await removeCat(Number(req.params.id), res.locals.user);
   if (result) {
     res.json({message: 'Cat removed!'});
   } else {
@@ -76,7 +76,11 @@ const deleteCat = async (req, res) => {
 
 const putCat = async (req, res) => {
   // in real life, all input data (req.body) should be validated before using it
-  const result = await modifyCat(req.body, Number(req.params.id));
+  const result = await modifyCat(
+    req.body,
+    Number(req.params.id),
+    res.locals.user
+  );
   if (result) {
     res.json({message: 'Cat updated!'});
   } else {

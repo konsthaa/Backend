@@ -1,5 +1,11 @@
 // Import model functions that read and add users.
-import {addUser, findUserById, listAllUsers, modifyUser, removeUser} from '../models/user-model.js';
+import {
+  addUser,
+  findUserById,
+  listAllUsers,
+  modifyUser,
+  removeUser,
+} from '../models/user-model.js';
 
 // Handle GET /users and send the full user list as JSON.
 const getAllUsers = async (req, res) => {
@@ -20,9 +26,11 @@ const getUserById = async (req, res) => {
 // Handle POST /users using the JSON request body, then respond with the new ID.
 const postUser = async (req, res) => {
   const {name, username, email, password} = req.body ?? {};
-  if (![name, username, email, password].every(
-    (value) => typeof value === 'string' && value.trim(),
-  )) {
+  if (
+    ![name, username, email, password].every(
+      (value) => typeof value === 'string' && value.trim()
+    )
+  ) {
     return res.status(400).json({
       message: 'Name, username, email, and password are required.',
     });
@@ -33,7 +41,25 @@ const postUser = async (req, res) => {
 };
 
 const putUser = async (req, res) => {
-  const updated = await modifyUser(req.body, Number(req.params.id));
+  const id = Number(req.params.id);
+  const actor = res.locals.user;
+
+  if (!Number.isInteger(id) || id < 1) {
+    return res.status(400).json({message: 'Invalid user ID.'});
+  }
+
+  if (!actor || (actor.role !== 'admin' && actor.user_id !== id)) {
+    return res.sendStatus(403);
+  }
+
+  if (
+    actor.role !== 'admin' &&
+    Object.prototype.hasOwnProperty.call(req.body ?? {}, 'role')
+  ) {
+    return res.sendStatus(403);
+  }
+
+  const updated = await modifyUser(req.body, id, actor);
   if (!updated) {
     return res.status(404).json({message: 'User not found.'});
   }
@@ -42,9 +68,19 @@ const putUser = async (req, res) => {
 
 // These endpoints intentionally return the fixed responses required by the assignment.
 
-
 const deleteUser = async (req, res) => {
-  const deleted = await removeUser(Number(req.params.id));
+  const id = Number(req.params.id);
+  const actor = res.locals.user;
+
+  if (!Number.isInteger(id) || id < 1) {
+    return res.status(400).json({message: 'Invalid user ID.'});
+  }
+
+  if (!actor || (actor.role !== 'admin' && actor.user_id !== id)) {
+    return res.sendStatus(403);
+  }
+
+  const deleted = await removeUser(id);
   if (!deleted) {
     return res.status(404).json({message: 'User not found.'});
   }

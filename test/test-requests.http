@@ -14,6 +14,9 @@ GET {{apiUrl}}/cats
 ### get cat by id
 GET {{apiUrl}}/cats/8
 
+### confirm name stays unchanged
+GET {{apiUrl}}/cats/41
+
 ### get cat by id (FAIL: not found)
 GET {{apiUrl}}/cats/98
 
@@ -43,6 +46,23 @@ Content-Type: application/json
   "password": "dummy-test-password"
 }
 
+### Create cat as logged-in user
+# @name createOwnedCat
+POST {{apiUrl}}/cats
+Authorization: Bearer {{login.response.body.token}}
+Content-Type: application/json
+
+{
+  "cat_name": "Auth ownership test",
+  "birthdate": "2022-10-10",
+  "weight": 4,
+  "owner": 37,
+  "filename": "auth-test.jpg"
+}
+
+### Check the owner
+GET {{apiUrl}}/cats/51
+
 ### get authenticated user
 GET {{apiUrl}}/auth/me
 Authorization: Bearer {{login.response.body.token}}
@@ -60,6 +80,43 @@ Content-Type: application/json
   "email": "assignment_test_01@example.com",
   "password": "temporary-test-password",
   "role": "user"
+}
+
+### test whether i can edit someone else's cat
+PUT {{apiUrl}}/cats/41
+Authorization: Bearer {{login.response.body.token}}
+Content-Type: application/json
+
+{
+  "cat_name": "Should not change"
+}
+
+### test updating another users record
+PUT {{apiUrl}}/users/37
+Authorization: Bearer {{login.response.body.token}}
+Content-Type: application/json
+
+{
+  "name": "Should not change"
+}
+
+### Trying to promote myself (expecting 403)
+PUT {{apiUrl}}/users/40
+Authorization: Bearer {{login.response.body.token}}
+Content-Type: application/json
+
+{
+  "role": "admin"
+}
+
+
+### Update my own cat (expecting success)
+PUT {{apiUrl}}/cats/51
+Authorization: Bearer {{login.response.body.token}}
+Content-Type: application/json
+
+{
+  "cat_name": "Auth ownership test updated"
 }
 
 ### update the temporary test user
@@ -135,3 +192,51 @@ DELETE {{apiUrl}}/cats/999999
 ### protected route with token (expect 404 for nonexistent cat)
 DELETE {{apiUrl}}/cats/999999
 Authorization: Bearer {{login.response.body.token}}
+
+### test deleting cat 41
+DELETE {{apiUrl}}/cats/41
+Authorization: Bearer {{login.response.body.token}}
+
+
+
+### creating a disposable account
+POST {{apiUrl}}/users
+Content-Type: application/json
+
+{
+  "name": "Temporary Admin Test",
+  "username": "temp_admin_test",
+  "email": "temp_admin_test@example.com",
+  "password": "temporary-admin-password"
+}
+
+
+### Login as temporary admin
+# @name adminLogin
+POST {{apiUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "username": "temp_admin_test",
+  "password": "temporary-admin-password"
+}
+
+
+### Admin updates another user's cat
+PUT {{apiUrl}}/cats/51
+Authorization: Bearer {{adminLogin.response.body.token}}
+Content-Type: application/json
+
+{
+  "cat_name": "Admin authorization test"
+}
+
+
+### Admin updates another user's user record
+PUT {{apiUrl}}/users/40
+Authorization: Bearer {{adminLogin.response.body.token}}
+Content-Type: application/json
+
+{
+  "name": "Admin Authorization Test"
+}
